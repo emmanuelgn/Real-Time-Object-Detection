@@ -2,6 +2,10 @@ import cv2
 import tkinter as tk
 from tkinter import Label
 from PIL import Image, ImageTk
+from detection import load_yolo, detect_objects
+
+# Inicializar YOLO
+net, output_layers, classes = load_yolo()
 
 cap = cv2.VideoCapture(0)
 
@@ -15,6 +19,9 @@ lbl.pack()
 def image_capture():
     ret, frame = cap.read()
     if ret:
+        outputs, width, height = detect_objects(frame, net, output_layers)
+        
+        # Exibir imagem no Tkinter
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         img = Image.fromarray(cv2image)
         imgtk = ImageTk.PhotoImage(image=img)
@@ -24,16 +31,14 @@ def image_capture():
 def start_capture():
     global capturing
     capturing = True
-    start_btn.config(state=tk.DISABLED)
-    stop_btn.config(state=tk.NORMAL)
+    toggle_btn.config(text="Stop Capture")
     capture_frames()
 
 def stop_capture():
     global capturing
     capturing = False
-    lbl.configure(image='')  # Clear the image from the label
-    start_btn.config(state=tk.NORMAL)
-    stop_btn.config(state=tk.DISABLED)
+    lbl.configure(image='')
+    toggle_btn.config(text="Start Capture")
 
 def capture_frames():
     if capturing:
@@ -45,20 +50,8 @@ capturing = False
 button_frame = tk.Frame(root)
 button_frame.pack(side=tk.BOTTOM, pady=20)
 
-toggle_btn = tk.Button(button_frame, text="Start Capture", command=lambda: toggle_capture(toggle_btn), width=20, height=2)
+toggle_btn = tk.Button(button_frame, text="Start Capture", command=lambda: start_capture() if not capturing else stop_capture(), width=20, height=2)
 toggle_btn.pack(side=tk.LEFT, padx=5)
 
-def toggle_capture(button):
-    global capturing
-    if capturing:
-        capturing = False
-        lbl.configure(image='')  # Clear the image from the label
-        button.config(text="Start Capture")
-    else:
-        capturing = True
-        button.config(text="Stop Capture")
-        capture_frames()
-
 root.mainloop()
-
 cap.release()
