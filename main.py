@@ -31,6 +31,7 @@ def start_capture():
 def stop_capture():
     global capturing
     capturing = False
+    lbl.configure(image='')  # Clear the image from the label
     start_btn.config(state=tk.NORMAL)
     stop_btn.config(state=tk.DISABLED)
 
@@ -41,11 +42,22 @@ def capture_frames():
 
 capturing = False
 
-start_btn = tk.Button(root, text="Start Capture", command=start_capture)
-start_btn.pack()
+button_frame = tk.Frame(root)
+button_frame.pack(side=tk.BOTTOM, pady=20)
 
-stop_btn = tk.Button(root, text="Stop Capture", command=stop_capture)
-stop_btn.pack()
+toggle_btn = tk.Button(button_frame, text="Start Capture", command=lambda: toggle_capture(toggle_btn), width=20, height=2)
+toggle_btn.pack(side=tk.LEFT, padx=5)
+
+def toggle_capture(button):
+    global capturing
+    if capturing:
+        capturing = False
+        lbl.configure(image='')  # Clear the image from the label
+        button.config(text="Start Capture")
+    else:
+        capturing = True
+        button.config(text="Stop Capture")
+        capture_frames()
 
 root.mainloop()
 
